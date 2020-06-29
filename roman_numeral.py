@@ -195,8 +195,8 @@ Approach:
     -
 
 """
+import math
 def short_roman_numeral(numeral):
-    print(numeral)
     numeral_list = [
         ('M',1000),
         ('CM',900),
@@ -213,36 +213,48 @@ def short_roman_numeral(numeral):
         ('I',1)
     ]
     output = ''
-    for i in range(len(numeral_list)-1, -1, -2):
-        sym, val = numeral_list[i]
-        letter_count = 0
-        while numeral.endswith(sym):
-            trim_by = len(sym)
-            numeral = numeral[:-trim_by]
-            letter_count += 1
-        if i == 0:
-            output = letter_count * sym + output
-        else:
-            five_sym, five_val = numeral_list[i-2]
-            next_sym, next_val = numeral_list[i-1]
-            if five_val // val == 5:
-                five_count = letter_count // 5
-                five_rem = letter_count % 5
-                next_count = five_rem // 4
-                next_rem = five_rem % 4
-                output = next_count * next_sym + next_rem * sym + output
-                numeral = numeral + five_count * five_sym
-            else:
-                five_count = letter_count // 2
-                five_rem = letter_count % 2
-                output = five_rem * sym + output
-                numeral = numeral + five_count * five_sym
+    numeral_count = len(numeral_list)-1
 
-    print(output)
+    #iterate through whole range
+    for i in range(numeral_count, 0, -4):
+        #count total value of symbols in group
+        val_sum = 0
+        for j in range(i, i-4, -1):
+            sym, val = numeral_list[j]
+            sym_length = len(sym)
+            while numeral.endswith(sym):
+                numeral = numeral[:-sym_length]
+                val_sum += val
+
+        #bump any amount over ten up to the next tier, append to end of numeral
+        ten_sym, ten_val = numeral_list[i-4]
+        ten_count = val_sum // ten_val
+        val_sum = val_sum % ten_val
+        numeral = numeral + ten_count * ten_sym
+        
+        #append write combo of symbols to output for remaining val_sum
+        append = ''
+        for j in range(i-3,i+1,1):
+            sym, val = numeral_list[j]
+            append_count = val_sum // val
+            val_sum = val_sum % val
+            append += sym * append_count
+        
+        output = append + output
+
+    #append Ms to output
+    sym, val = numeral_list[0]
+    sym_length = len(sym)
+    while numeral.endswith(sym):
+        numeral = numeral[:-sym_length]
+        output = sym + output
+
     return output
     
 assert short_roman_numeral('MDLXIIIII') == 'MDLXV'
 assert short_roman_numeral('MDLXIIII') == 'MDLXIV'
-assert short_roman_numeral('MDLXIIIIIIIII') == 'MDLXVIV'
-assert short_roman_numeral('MDLXXXXXIIIIIIIII') == 'MDCVIV'
+assert short_roman_numeral('MDLXIIIIIIIII') == 'MDLXIX'
+assert short_roman_numeral('MDLXXXXXIIIIIIIII') == 'MDCIX'
 assert short_roman_numeral('MDLXXXXXIVIV') == 'MDCVIII'
+assert short_roman_numeral('MCMDDDD') == 'MMMCM'
+assert short_roman_numeral('MCMDDDDIVIV') == 'MMMCMVIII'
